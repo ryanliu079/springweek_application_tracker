@@ -3,6 +3,7 @@
 # --- Search settings ---
 # Searches ryanliu61799@gmail.com (work/applications inbox)
 SEARCH_QUERY = """
+-category:promotions -category:social -from:(linkedin.com) -from:(forage.com) -from:(amplifyme.com) -from:(amplifytrading.com)
 (subject:("application received") OR subject:("thank you for applying") OR
  subject:("spring week") OR subject:("summer internship") OR subject:("off-cycle") OR
  subject:("online assessment") OR subject:("video interview") OR subject:("hackerrank") OR
@@ -16,7 +17,9 @@ SEARCH_QUERY = """
  from:(no-reply@drwrecruiting.com) OR from:(noreply@jefferies.tal.net) OR
  from:(noreply@campuscareers.bofa.com) OR from:(recruitment@optiver.com) OR
  from:(no-reply@optiver.com) OR from:(barclays@myworkday.com) OR
- from:(no-reply@talent-citadel.com) OR from:(ye+db@yello.co))
+ from:(no-reply@talent-citadel.com) OR from:(ye+db@yello.co) OR
+ from:(citi@myworkday.com) OR from:(talent@cubistsystematic.com))
+
 """
 DATE_CUTOFF = "2024/09/01"
 MAX_THREADS = 300

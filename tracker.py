@@ -233,23 +233,7 @@ def deduplicate(records: list[dict]) -> list[dict]:
                 r["date_applied"] = existing.get("date_applied")
                 seen[key] = r
 
-    # Second pass: collapse remaining duplicates by company name alone
-    by_company = {}
-    for r in seen.values():
-        co = (r.get("company") or "").lower().strip()
-        if co not in by_company:
-            by_company[co] = r
-        else:
-            existing = by_company[co]
-            try:
-                r_idx = STATUSES.index(r.get("status", "Pending"))
-                e_idx = STATUSES.index(existing.get("status", "Pending"))
-            except ValueError:
-                r_idx = e_idx = 0
-            if r_idx > e_idx:
-                r["date_applied"] = existing.get("date_applied")
-                by_company[co] = r
-    return list(by_company.values())
+    return list(seen.values())
 
 
 # ─────────────────────────────────────────
@@ -437,7 +421,16 @@ def infer_rejections_from_web(records: list[dict]) -> list[dict]:
 
             print(f"   {company}: {answer[:120]}")
 
-            if answer.upper().startswith("YES") or "offers have been sent" in answer.lower() or "already sent" in answer.lower():
+            answer_lower = answer.lower()
+            # Match affirmative signals; exclude "yes or no" which is just phrasing
+            is_affirmative = (
+                bool(re.search(r'\blikely yes\b', answer_lower)) or
+                bool(re.search(r'^[*\s]*yes\b', answer_lower)) or
+                "offers have been sent" in answer_lower or
+                "already sent out" in answer_lower or
+                "offers have gone out" in answer_lower
+            )
+            if is_affirmative:
                 records[idx]["status"] = "Rejected"
                 records[idx]["notes"] = (
                     (records[idx].get("notes") or "") +
