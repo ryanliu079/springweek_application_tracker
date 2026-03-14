@@ -30,7 +30,7 @@ SHEET_NAME = "Applications"
 
 # --- Calendar ---
 # Events are added to rliu07979@gmail.com (personal calendar)
-CALENDAR_ID = "rliu07979@gmail.com"
+CALENDAR_ID = "ryanliu61799@gmail.com"
 TIMEZONE = "Europe/London"
 
 # --- Status taxonomy ---
