@@ -7,9 +7,9 @@
 ## Architecture Overview
 
 ```
-Gmail (MCP) → Claude Parser → Excel Tracker (.xlsx) → Google Calendar (MCP)
-                    ↑
-             Anthropic API
+Gmail API (ryanliu61799@gmail.com) → Claude Parser → Excel Tracker (.xlsx)
+                    ↑                                         ↓
+             Anthropic API                     Google Calendar API (rliu07979@gmail.com)
              (claude-haiku-4-5 for extraction,
               claude-sonnet-4-6 for ambiguous cases)
 ```
@@ -20,6 +20,70 @@ Gmail (MCP) → Claude Parser → Excel Tracker (.xlsx) → Google Calendar (MCP
 3. `deduplicate` — Merge threads for the same role into one record
 4. `write` — Create/update `applications.xlsx` with all records
 5. `sync_calendar` — For offers/interviews confirmed, push Google Calendar events
+
+---
+
+## Adding Events to Google Calendar
+
+### Two accounts, two tokens
+| Account | Purpose | Token file |
+|---|---|---|
+| `ryanliu61799@gmail.com` | Read application emails (Gmail API) | `token_gmail.json` |
+| `rliu07979@gmail.com` | Write calendar events (Calendar API) | `token_calendar.json` |
+
+Authentication is handled by `tools/google_auth.py`. Both tokens are auto-refreshed; if a token is missing or expired, a browser window opens for re-authorisation.
+
+### When to add a calendar event
+
+Add events when an email confirms **specific dates and times** for attendance — not just status updates. Trigger cases:
+- Programme/event registration confirmed with joining details (e.g. Zoom webinar IDs, office address)
+- Interview invitation with a confirmed time slot
+- Assessment centre invitation with a confirmed date
+
+Do **not** add events for: application acknowledgements, rejections, OA invitations without a date, or "keep an eye out for further communications".
+
+### How to add events
+
+Use `tools/google_auth.py` to get a Calendar API service, then call `cal.events().insert()`:
+
+```python
+import sys
+sys.path.insert(0, 'tools')
+from google_auth import get_calendar_service
+
+cal = get_calendar_service()
+
+event = {
+    'summary': '<Company> — <Programme/Stage>',
+    'description': '<Full joining details: Zoom ID, password, key instructions>',
+    'start': {'dateTime': 'YYYY-MM-DDTHH:MM:SS', 'timeZone': 'Europe/London'},
+    'end':   {'dateTime': 'YYYY-MM-DDTHH:MM:SS', 'timeZone': 'Europe/London'},
+    'location': '<Zoom link or office address>',
+    'reminders': {'useDefault': False, 'overrides': [{'method': 'popup', 'minutes': 15}]},
+}
+
+result = cal.events().insert(calendarId='primary', body=event).execute()
+print(result['htmlLink'])
+```
+
+> **Note:** Use `calendarId='primary'` — passing the email address directly returns a 404.
+
+### Multi-session events
+
+When a programme has multiple sessions (e.g. Morgan Stanley Early Insights — two weekly webinars plus a survey deadline), create **one event per session** rather than a single all-day block. This makes it easy to set different reminders and include session-specific joining details.
+
+For deadline-style events (surveys, action items), set the end time 30 minutes after the deadline and use a longer reminder (60 minutes) so they aren't missed.
+
+### What to include in the description
+
+- Programme name and week/session number
+- Zoom webinar ID and password (or office address)
+- Any action required before/after (e.g. "complete division survey by 12pm Thu 26 Mar")
+- Contact email for queries
+
+### Updating `applications.xlsx` after calendar sync
+
+After creating events, write the Google Calendar event ID back to the `Calendar Event ID` column in `applications.xlsx` so the record stays traceable. The event ID is returned in `result['id']`.
 
 ---
 

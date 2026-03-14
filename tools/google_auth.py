@@ -30,7 +30,7 @@ GMAIL_SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 CALENDAR_SCOPES = ["https://www.googleapis.com/auth/calendar.events"]
 
 GMAIL_TOKEN = os.path.join(PROJECT_ROOT, "token_gmail.json")
-CALENDAR_TOKEN = os.path.join(PROJECT_ROOT, "token_calendar.json")
+CALENDAR_TOKEN = os.path.join(PROJECT_ROOT, "token_calendar_work.json")
 
 
 def _client_config() -> dict:
@@ -84,6 +84,6 @@ def get_gmail_service():
 
 
 def get_calendar_service():
-    """Return an authenticated Google Calendar API service for rliu07979@gmail.com."""
-    creds = _get_credentials(CALENDAR_TOKEN, CALENDAR_SCOPES, "rliu07979@gmail.com (Calendar)")
+    """Return an authenticated Google Calendar API service for ryanliu61799@gmail.com."""
+    creds = _get_credentials(CALENDAR_TOKEN, CALENDAR_SCOPES, "ryanliu61799@gmail.com (Calendar)")
     return build("calendar", "v3", credentials=creds)
