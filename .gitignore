@@ -1,7 +1,6 @@
 .env
 credentials.json
-token_gmail.json
-token_calendar.json
+token_*.json
 .venv/
 __pycache__/
 *.pyc
