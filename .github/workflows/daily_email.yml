@@ -1,0 +1,52 @@
+name: Daily Internship Email
+
+on:
+  schedule:
+    - cron: "0 8 * * *"   # 8am UTC daily
+  workflow_dispatch:        # allow manual trigger from GitHub UI
+
+jobs:
+  send-email:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Write .env
+        run: |
+          cat > .env <<EOF
+          ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_PROJECT_ID=${{ secrets.GOOGLE_PROJECT_ID }}
+          EOF
+
+      - name: Write token files
+        run: |
+          echo '${{ secrets.TOKEN_GMAIL_JSON }}' > token_gmail.json
+          echo '${{ secrets.TOKEN_GMAIL_SEND_JSON }}' > token_gmail_send.json
+          echo '${{ secrets.TOKEN_CALENDAR_WORK_JSON }}' > token_calendar_work.json
+
+      - name: Update applications tracker
+        run: python tracker.py --update
+
+      - name: Send daily email
+        run: python tools/send_daily_email.py
+
+      - name: Commit updated xlsx
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add applications.xlsx
+          git diff --cached --quiet || git commit -m "chore: update applications.xlsx [skip ci]"
+          git push

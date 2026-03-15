@@ -5,4 +5,3 @@ token_*.json
 __pycache__/
 *.pyc
 .tmp/
-applications.xlsx
