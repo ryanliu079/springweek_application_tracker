@@ -27,9 +27,11 @@ load_dotenv()
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 GMAIL_SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
+GMAIL_SEND_SCOPES = ["https://www.googleapis.com/auth/gmail.send"]
 CALENDAR_SCOPES = ["https://www.googleapis.com/auth/calendar.events"]
 
 GMAIL_TOKEN = os.path.join(PROJECT_ROOT, "token_gmail.json")
+GMAIL_SEND_TOKEN = os.path.join(PROJECT_ROOT, "token_gmail_send.json")
 CALENDAR_TOKEN = os.path.join(PROJECT_ROOT, "token_calendar_work.json")
 
 
@@ -80,6 +82,12 @@ def _get_credentials(token_path: str, scopes: list[str], account_hint: str) -> C
 def get_gmail_service():
     """Return an authenticated Gmail API service for ryanliu61799@gmail.com."""
     creds = _get_credentials(GMAIL_TOKEN, GMAIL_SCOPES, "ryanliu61799@gmail.com (Gmail)")
+    return build("gmail", "v1", credentials=creds)
+
+
+def get_gmail_send_service():
+    """Return an authenticated Gmail API service with send scope for ryanliu61799@gmail.com."""
+    creds = _get_credentials(GMAIL_SEND_TOKEN, GMAIL_SEND_SCOPES, "ryanliu61799@gmail.com (Gmail Send)")
     return build("gmail", "v1", credentials=creds)
 
 
